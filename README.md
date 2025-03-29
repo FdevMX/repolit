@@ -10,15 +10,13 @@ Repolit is a web application designed to manage files and categories with user a
 - [Repolit Project](#repolit-project)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
-  - [Usage](#usage)
-  - [Project Structure](#project-structure)
   - [License](#license)
 
 ## Installation
 
 1. Clone the repository:
     ```
-    git clone https://github.com/yourusername/repolit.git
+    git clone https://github.com/fdevmx/repolit.git
     cd repolit
     ```
 
@@ -27,13 +25,13 @@ Repolit is a web application designed to manage files and categories with user a
     python -m venv venv
    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
    ```
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-    ```tall the required packages:
+   
+   tall the required packages:
+   
    ```
-   pip install -r requirements.txt
-    ```
     pip install -r requirements.txt
-    ``` up your environment variables in the `.env` file.
+   ``` 
+   up your environment variables in the `.env` file.
 
 ## Usage
 
