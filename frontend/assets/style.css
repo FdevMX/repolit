@@ -1,0 +1,137 @@
+:root {
+    /* Color palette */
+    --color-pink-lightest: #FEF0FF;
+    --color-pink-light: #FBD8FD;
+    --color-pink-medium: #F9A6FD;
+    --color-pink-dark: #F472B6;
+    --color-accent: #FB5A5A;
+    --color-black: #000000;
+    --color-white: #fff;
+    --color-gray-dark: #3a3a3a;
+    
+    /* Semantic colors */
+    --background-main: var(--color-pink-lightest);
+    --text-primary: var(--color-black);
+    --link-color: var(--color-accent);
+    --input-background: var(--color-pink-light);
+    --input-text: var(--color-gray-dark);
+    --button-background: var(--color-pink-medium);
+    --button-hover-background: var(--color-pink-dark);
+    --button-hover-text: var(--color-white);
+}
+
+/* Ejemplo de fondo rosado y ajuste de la zona principal */
+body {
+    background-color: var(--background-main);
+}
+
+.css-18e3th9 {
+    padding: 2rem 4rem; /* Ajustar espacios si se desea */
+}
+
+/* Apply font family globally to all elements */
+body, button, input, label, p, div, span, a, h1, h2, h3, h4, h5, h6, 
+.stMarkdown, [data-testid="stMarkdownContainer"], .stText {
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* Styling for Streamlit headings */
+[data-testid="stMarkdownContainer"] h1,
+[data-testid="stMarkdownContainer"] h2,
+[data-testid="stMarkdownContainer"] h3,
+.st-emotion-cache-10trblm,  /* st.title() */
+.st-emotion-cache-1xarl3l,  /* st.header() */
+.st-emotion-cache-1offfwp   /* st.subheader() */
+{
+    color: var(--text-primary);
+    text-align: center;
+}
+
+/* Styling for regular text */
+[data-testid="stMarkdownContainer"] p,
+.st-emotion-cache-183lzff {  /* st.write() text */
+    color: var(--text-primary);
+}
+
+/* Styling for links */
+a, [data-testid="stMarkdownContainer"] a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+a:hover, [data-testid="stMarkdownContainer"] a:hover {
+    text-decoration: underline;
+}
+
+/* Ajuste de los TextBox */
+.stTextInput input {
+    /* border: 2px solid var(--input-background); */
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    color: var(--input-text);
+    background-color: var(--input-background);
+    width: 100%;
+}
+
+/* Label styling */
+.stTextInput label {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Password field styling */
+.stTextInput input[type="password"] {
+    letter-spacing: 0.25em;
+}
+
+/* Solución completa para el campo de contraseña */
+.stTextInput > div {
+    background-color: var(--input-background) !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+}
+
+/* Estilo para el input de contraseña */
+.stTextInput [type="password"] {
+    background-color: var(--input-background) !important;
+    border: none !important;
+}
+
+/* Contenedor del icono */
+.stTextInput [data-testid="textInputRightIcon"],
+.stTextInput > div > div:last-child {
+    background-color: var(--input-background) !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* El icono mismo */
+.stTextInput [data-testid="textInputRightIcon"] svg,
+.stTextInput > div > div:last-child svg {
+    color: var(--text-primary) !important;
+}
+
+/* Evitar cambio de colores en hover */
+.stTextInput [data-testid="textInputRightIcon"]:hover,
+.stTextInput > div > div:last-child:hover {
+    background-color: var(--input-background) !important;
+    border: none !important;
+}
+
+/* Botones */
+.stButton>button {
+    background-color: var(--button-background);
+    color: var(--text-primary);
+    border-radius: 9999px; /* Botones redondeados */
+    border: none;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.stButton>button:hover {
+    background-color: var(--button-hover-background);
+    color: var(--button-hover-text);
+}
+
