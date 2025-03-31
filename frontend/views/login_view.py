@@ -1,20 +1,23 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+import streamlit as st
+from frontend.components.form_components import text_input_custom, button_custom
+from frontend.views.register_view import register_view
 
-login_view = Blueprint('login_view', __name__)
+def login_view():
+    st.markdown("## Inicio de sesión")
+    st.write("")
 
-@login_view.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        # Here you would typically verify the username and password
-        # For example, by checking against a database
-        
-        if username == 'admin' and password == 'password':  # Example check
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard_view.dashboard'))
-        else:
-            flash('Login failed. Please check your credentials.', 'danger')
+    # Campos del formulario
+    email = text_input_custom("Correo electrónico", key="login_email")
+    password = text_input_custom("Contraseña", type="password", key="login_password")
+
+    # Botón de Iniciar Sesión
+    if button_custom("INICIAR SESIÓN"):
+        # Aquí se podría llamar a la lógica de autenticación en la carpeta backend
+        st.write("Lógica de autenticación pendiente...")
+
+    st.write("")
     
-    return render_template('login.html')  # Ensure you have a login.html template in your templates directory
+    # Link para registro (ahora con botón)
+    if button_custom("¿No tienes cuenta? Regístrate"):
+        st.session_state.vista = "register"
+        st.rerun()

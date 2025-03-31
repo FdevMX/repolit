@@ -1,13 +1,25 @@
-# This file contains the logic for rendering the registration view.
+import streamlit as st
+from frontend.components.form_components import text_input_custom, button_custom
 
-def render_registration_form():
-    # Logic to render the registration form goes here
-    pass
 
-def handle_registration_submission(data):
-    # Logic to handle the registration form submission goes here
-    pass
+def register_view():
+    st.markdown("## Regístrate como usuario")
+    st.write("")
 
-def validate_registration_data(data):
-    # Logic to validate the registration data goes here
-    pass
+    # Campos del formulario
+    nombre = text_input_custom("Nombre", key="nombre")
+    apellidos = text_input_custom("Apellidos", key="apellidos")
+    correo = text_input_custom("Correo electrónico", key="correo")
+    contrasena = text_input_custom("Contraseña", type="password", key="contrasena")
+
+    # Botón de Registro
+    if button_custom("REGISTRARSE"):
+        # Aquí se podría llamar a la lógica de registro en la carpeta backend
+        st.write("Lógica de registro pendiente...")
+
+    st.write("")
+    
+    # Link para iniciar sesión (ahora con botón)
+    if button_custom("¿Ya tienes cuenta? Inicia Sesión"):
+        st.session_state.vista = "login"
+        st.rerun()
