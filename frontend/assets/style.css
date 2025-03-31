@@ -44,7 +44,7 @@ body, button, input, label, p, div, span, a, h1, h2, h3, h4, h5, h6,
 .st-emotion-cache-1offfwp   /* st.subheader() */
 {
     color: var(--text-primary);
-    text-align: center;
+    /* text-align: center; */
 }
 
 /* Styling for regular text */
@@ -61,6 +61,108 @@ a, [data-testid="stMarkdownContainer"] a {
 
 a:hover, [data-testid="stMarkdownContainer"] a:hover {
     text-decoration: underline;
+}
+
+/* Estilos unificados para todos los elementos de formulario */
+
+/* Estilos generales para todos los elementos de formulario */
+.stTextInput > div[data-baseweb="base-input"],
+.stTextArea [data-testid="stTextAreaInput"],
+.stSelectbox > div[data-baseweb="select"],
+.stMultiSelect > div,
+.uploadedFileData {
+    background-color: var(--input-background) !important;
+    border-radius: 10px !important;
+    color: var(--input-text) !important;
+}
+
+/* Ajustes específicos para textarea */
+.stTextArea [data-testid="stTextAreaInput"] {
+    border: none !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* Ajustes para selectbox */
+.stSelectbox > div[data-baseweb="select"] > div {
+    background-color: var(--input-background) !important;
+    color: var(--input-text) !important;
+}
+
+.stSelectbox [role="listbox"] {
+    background-color: var(--input-background) !important;
+}
+
+/* Ajustes para multiselect */
+.stMultiSelect > div {
+    background-color: var(--input-background) !important;
+    border-radius: 10px !important;
+}
+
+.stMultiSelect [data-baseweb="tag"] {
+    background-color: var(--button-background) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Estilos para file uploader */
+.stFileUploader > div > div {
+    background-color: var(--input-background) !important;
+    border: 1px dashed var(--color-gray-dark) !important;
+    border-radius: 10px !important;
+    padding: 1rem !important;
+}
+
+.stFileUploader [data-testid="stFileUploaderDropzone"] {
+    background-color: var(--input-background) !important;
+    color: var(--input-text) !important;
+}
+
+/* Ajuste para los labels de todos los elementos */
+.stTextArea label,
+.stSelectbox label,
+.stMultiSelect label,
+.stFileUploader label {
+    color: var(--text-primary) !important;
+    font-weight: 500 !important;
+}
+
+/* Estilos específicos para textarea (descripción) */
+.stTextArea textarea {
+    background-color: var(--input-background) !important;
+    border-radius: 10px !important;
+    color: var(--input-text) !important;
+    border: none !important;
+    padding: 0.5rem 1rem !important;
+}
+
+/* Contenedor del textarea */
+.stTextArea div[data-baseweb="textarea"] {
+    background-color: var(--input-background) !important;
+    border-radius: 10px !important;
+}
+
+/* Estilos específicos para multiselect (tags) */
+[data-testid="stMultiSelect"] div[role="combobox"] {
+    background-color: var(--input-background) !important;
+    border-radius: 10px !important;
+}
+
+/* El área de entrada del multiselect */
+[data-testid="stMultiSelect"] input {
+    background-color: var(--input-background) !important;
+    color: var(--input-text) !important;
+}
+
+/* Los tags seleccionados */
+[data-testid="stMultiSelect"] [data-baseweb="tag"] {
+    background-color: var(--color-pink-medium) !important;
+    color: var(--color-black) !important;
+}
+
+/* El menú desplegable del multiselect */
+div[data-baseweb="popover"] ul, 
+div[data-baseweb="menu"] ul {
+    background-color: var(--input-background) !important;
+    color: var(--input-text) !important;
 }
 
 /* Ajuste de los TextBox */
@@ -135,3 +237,314 @@ a:hover, [data-testid="stMarkdownContainer"] a:hover {
     color: var(--button-hover-text);
 }
 
+/* Estilo para las tarjetas - versión mejorada y responsiva */
+.card {
+    background-color: var(--input-background);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.card-content {
+    flex-grow: 1;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.card h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+    margin-bottom: 0.8rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limita a 2 líneas */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-date {
+    margin: 0.3rem 0;
+    color: var(--color-gray-dark);
+    font-size: 0.9rem;
+}
+
+.card-tags {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.tag {
+    display: inline-block;
+    background-color: var(--button-background);
+    color: var(--button-hover-text);
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.card-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+/* Botones de editar y eliminar */
+.edit-button, .delete-button {
+    padding: 0.4rem 0.6rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border: none;
+    flex: 1;
+    transition: background-color 0.2s ease;
+    text-align: center;
+}
+
+.edit-button {
+    background-color: #FFD700;
+    color: #000;
+    margin-right: 0.5rem;
+}
+
+.delete-button {
+    background-color: #FF6347;
+    color: #FFF;
+}
+
+.edit-button:hover {
+    background-color: #FFC107;
+}
+
+.delete-button:hover {
+    background-color: #FF4500;
+}
+
+/* Media queries para diseño responsivo */
+@media screen and (max-width: 1200px) {
+    .card {
+        min-height: 240px;
+    }
+    
+    .edit-button, .delete-button {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .card h4 {
+        font-size: 1.1rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .card {
+        min-height: 200px;
+    }
+    
+    .card-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .edit-button {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .card {
+        padding: 0.8rem;
+    }
+    
+    .card h4 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-date {
+        font-size: 0.8rem;
+        margin: 0.2rem 0;
+    }
+}
+
+/* Estilos para la gestión de categorías */
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--input-background);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.category-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.category-name {
+    font-size: 1.2rem;
+    font-weight: 500;
+    padding: 0.7rem 1rem;
+    background-color: var(--input-background);
+    border-radius: 8px;
+}
+
+.category-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.edit-button, .delete-button {
+    padding: 0.4rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+.edit-button {
+    background-color: #FFD700;
+    color: #000;
+}
+
+.delete-button {
+    background-color: #FF6347;
+    color: #FFF;
+}
+
+.edit-button:hover {
+    background-color: #FFC107;
+}
+
+.delete-button:hover {
+    background-color: #FF4500;
+}
+
+.add-button {
+    background-color: var(--color-pink-medium);
+    color: #000;
+    padding: 0.6rem 1.2rem;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.add-button:hover {
+    background-color: var(--color-pink-dark);
+}
+
+/* Estilos para los modales */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+    position: relative;
+    margin-top: 2rem;
+}
+
+/* Ocultar elementos del formulario en el modal */
+.modal-content .stButton {
+    display: block !important;
+}
+
+.category-divider {
+    margin: 1rem 0;
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Botones de editar y eliminar */
+[data-testid="baseButton-secondary"] {
+    border-radius: 5px !important;
+    font-size: 0.9rem !important;
+}
+
+/* Darle estilo a los botones específicamente */
+[key^="edit_"] button {
+    background-color: #FFD700 !important;
+    color: #000 !important;
+}
+
+[key^="delete_"] button {
+    background-color: #FF6347 !important;
+    color: #fff !important;
+}
+
+[key="add_category"] button {
+    background-color: var(--color-pink-medium) !important;
+    color: #000 !important;
+    font-weight: 500 !important;
+}
+
+/* Estilos para el modal */
+.modal-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+}
+
+.modal-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    position: relative;
+    z-index: 9999;
+    margin-top: 20vh;
+}
+
+/* Asegurar que los botones en el modal tengan buen formato */
+.modal-container [data-testid="baseButton-secondary"] {
+    margin-top: 10px !important;
+}
+
+
+/* Estilo para la sección de modal */
+.modal-section {
+    background-color: var(--input-background);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
