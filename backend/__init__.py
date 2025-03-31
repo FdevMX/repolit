@@ -1,14 +1,59 @@
 # Importaciones principales para facilitar el acceso a las funciones del backend
+import os
+
+# Determinar si usar la base de datos o almacenamiento local
+USE_DATABASE = os.getenv("USE_DATABASE", "False").lower() == "true"
 
 # Auth
 from .auth.auth_service import (
-    login, register, logout, is_authenticated, get_current_user, is_admin
+    login,
+    register,
+    logout,
+    is_authenticated,
+    get_current_user,
+    is_admin,
 )
 
-# Data Services
-from .data.user_data import (
-    get_users, get_user_by_id, get_user_by_email, create_user, update_user, delete_user
-)
+# Importar servicios según la configuración
+if USE_DATABASE:
+    # Servicios basados en base de datos
+    try:
+        from .data.user_data import (
+            get_users,
+            get_user_by_id,
+            get_user_by_email,
+            create_user,
+            update_user,
+            delete_user,
+        )
+
+        # Aquí irían las importaciones del resto de módulos con base de datos
+
+        print("Usando PostgreSQL como fuente de datos")
+    except Exception as e:
+        print(f"Error al importar módulos de base de datos: {e}")
+        print("Fallback: usando almacenamiento local JSON")
+        from .data.user_data import (
+            get_users,
+            get_user_by_id,
+            get_user_by_email,
+            create_user,
+            update_user,
+            delete_user,
+        )
+else:
+    # Servicios basados en almacenamiento local
+    from .data.user_data import (
+        get_users,
+        get_user_by_id,
+        get_user_by_email,
+        create_user,
+        update_user,
+        delete_user,
+    )
+
+    print("Usando almacenamiento local JSON")
+
 from .data.category_data import (
     get_categories, get_category_by_id, get_category_by_name, 
     create_category, update_category, delete_category
