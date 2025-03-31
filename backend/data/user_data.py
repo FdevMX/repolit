@@ -1,81 +1,82 @@
-# Operaciones CRUD para usuarios
-from ..utils.data_utils import load_json, save_json, generate_uuid, get_current_timestamp
+# Operaciones CRUD para usuarios usando PostgreSQL directo
+from ..db.connection import execute_query
+from ..utils.password_utils import hash_password
+import uuid
+from datetime import datetime
 
 def get_users():
     """Obtiene todos los usuarios."""
-    return load_json("users")
+    query = "SELECT * FROM users"
+    return execute_query(query)
 
 def get_user_by_id(user_id):
     """Obtiene un usuario por su ID."""
-    users = get_users()
-    for user in users:
-        if user['id'] == user_id:
-            return user
-    return None
+    query = "SELECT * FROM users WHERE id = %s"
+    return execute_query(query, (user_id,), fetchone=True)
 
 def get_user_by_email(email):
     """Obtiene un usuario por su correo electrónico."""
-    users = get_users()
-    for user in users:
-        if user['email'].lower() == email.lower():
-            return user
-    return None
+    query = "SELECT * FROM users WHERE email = %s"
+    return execute_query(query, (email,), fetchone=True)
 
 def create_user(email, name, apellidos, password_hash, role="user"):
     """Crea un nuevo usuario."""
-    users = get_users()
+    user_id = str(uuid.uuid4())
+    created_at = datetime.utcnow().isoformat()
     
-    new_user = {
-        "id": generate_uuid(),
-        "email": email,
-        "name": name,
-        "apellidos": apellidos,
-        "password_hash": password_hash,
-        "role": role,
-        "created_at": get_current_timestamp(),
-        "last_login": None
-    }
+    query = """
+    INSERT INTO users (id, email, name, apellidos, password_hash, role, created_at)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
+    RETURNING id, email, name, apellidos, role, created_at
+    """
     
-    users.append(new_user)
-    save_json("users", users)
+    user = execute_query(
+        query, 
+        (user_id, email, name, apellidos, password_hash, role, created_at),
+        fetchone=True,
+        commit=True
+    )
     
-    # Devolver copia del usuario sin password_hash
-    user_copy = new_user.copy()
-    user_copy.pop("password_hash", None)
-    return user_copy
+    return user
 
 def update_user(user_id, data):
     """Actualiza un usuario existente."""
-    users = get_users()
+    # Construir dinámicamente la consulta de actualización
+    fields = []
+    values = []
     
-    for i, user in enumerate(users):
-        if user['id'] == user_id:
-            # Actualizar solo los campos proporcionados
-            for key, value in data.items():
-                if key != 'id' and key != 'created_at':  # No permitir cambiar id o created_at
-                    user[key] = value
-            
-            save_json("users", users)
-            
-            # Devolver copia del usuario sin password_hash
-            user_copy = user.copy()
-            user_copy.pop("password_hash", None)
-            return user_copy
+    for key, value in data.items():
+        if key not in ['id', 'created_at']:  # Campos que no se deben actualizar
+            fields.append(f"{key} = %s")
+            values.append(value)
     
-    return None
+    if not fields:
+        return None  # No hay campos para actualizar
+        
+    query = f"""
+    UPDATE users 
+    SET {', '.join(fields)}
+    WHERE id = %s
+    RETURNING id, email, name, apellidos, role, created_at, last_login
+    """
+    
+    values.append(user_id)  # Añadir el ID para la condición WHERE
+    
+    return execute_query(query, tuple(values), fetchone=True, commit=True)
 
 def delete_user(user_id):
     """Elimina un usuario."""
-    users = get_users()
-    
-    for i, user in enumerate(users):
-        if user['id'] == user_id:
-            del users[i]
-            save_json("users", users)
-            return True
-    
-    return False
+    query = "DELETE FROM users WHERE id = %s RETURNING id"
+    result = execute_query(query, (user_id,), fetchone=True, commit=True)
+    return result is not None
 
 def update_last_login(user_id):
     """Actualiza la última fecha de inicio de sesión de un usuario."""
-    return update_user(user_id, {"last_login": get_current_timestamp()})
+    last_login = datetime.utcnow().isoformat()
+    query = """
+    UPDATE users
+    SET last_login = %s
+    WHERE id = %s
+    RETURNING id, email, name, apellidos, role, created_at, last_login
+    """
+    return execute_query(query, (last_login, user_id), fetchone=True, commit=True)
