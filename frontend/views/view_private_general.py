@@ -1,6 +1,49 @@
 import streamlit as st
+from backend.auth.auth_service import is_authenticated, get_current_user, is_admin
 
 def view_private_general():
+    # Verificar autenticación
+    if not is_authenticated():
+        st.warning("Debes iniciar sesión para acceder a esta página")
+        st.session_state.vista = "login"
+        st.rerun()
+        return
+
+    # Obtener datos del usuario
+    user = get_current_user()
+
+    # Configurar sidebar específico para usuario autenticado
+    with st.sidebar:
+        st.title(f"Bienvenido, {user['name']}")
+
+        # Opciones de navegación para usuarios autenticados
+        opciones = ["Todas las publicaciones", "Crear nueva publicación", 
+                    "Ir a la página pública", "Cerrar sesión"]
+
+        # Añadir opción de gestionar categorías solo para administradores
+        if is_admin():
+            opciones.insert(2, "Gestionar categorías")
+
+        opcion = st.radio("Opciones:", opciones)
+
+        # Navegación basada en la selección
+        if opcion == "Crear nueva publicación":
+            st.session_state.vista = "create_publication"
+            st.rerun()
+        elif opcion == "Gestionar categorías" and is_admin():
+            st.session_state.vista = "manage_categories"
+            st.rerun()
+        elif opcion == "Ir a la página pública":
+            st.session_state.vista = "public_apps"
+            st.rerun()
+        elif opcion == "Cerrar sesión":
+            st.session_state.vista = "logout"
+            st.rerun()
+
+    # Contenido principal de la vista
+    st.title("Todas las Publicaciones")
+    # Aquí va el contenido principal de la vista...
+
     # Inicializar estados para modales
     if 'edit_file_modal' not in st.session_state:
         st.session_state.edit_file_modal = False
