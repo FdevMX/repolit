@@ -172,3 +172,12 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Session cookies
+session_cookies/
+
+# File folder and data
+files/
+
+# credentials
+.credentials.toml
