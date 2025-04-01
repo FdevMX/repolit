@@ -1,95 +1,177 @@
-# README.md
+# Repolit - Repositorio Digital
 
-# Repolit Project
+Repolit es una aplicación web desarrollada con Streamlit que permite gestionar y compartir publicaciones digitales. El sistema cuenta con autenticación de usuarios, gestión de categorías y etiquetas, y soporte para diferentes tipos de archivos.
 
-Repolit is a web application designed to manage files and categories with user authentication. This project is structured into a backend and frontend, allowing for a clear separation of concerns.
+## Tabla de Contenidos
 
-## Table of Contents
+- [Repolit - Repositorio Digital](#repolit---repositorio-digital)
+  - [Tabla de Contenidos](#tabla-de-contenidos)
+  - [Características](#características)
+  - [Requisitos del Sistema](#requisitos-del-sistema)
+  - [Instalación](#instalación)
+  - [Configuración](#configuración)
+  - [Uso](#uso)
+    - [Roles de Usuario](#roles-de-usuario)
+      - [Usuario Público](#usuario-público)
+      - [Usuario Registrado](#usuario-registrado)
+      - [Administrador](#administrador)
+  - [Estructura del Proyecto](#estructura-del-proyecto)
+  - [Base de Datos](#base-de-datos)
+    - [Tablas Principales](#tablas-principales)
+    - [Esquema de Datos](#esquema-de-datos)
+  - [Funcionalidades](#funcionalidades)
+    - [Gestión de Publicaciones](#gestión-de-publicaciones)
+    - [Sistema de Filtros](#sistema-de-filtros)
+    - [Gestión de Archivos](#gestión-de-archivos)
+  - [Licencia](#licencia)
 
-- [README.md](#readmemd)
-- [Repolit Project](#repolit-project)
-  - [Table of Contents](#table-of-contents)
-  - [Installation](#installation)
-  - [License](#license)
+## Características
 
-## Installation
+- 🔐 Autenticación de usuarios
+- 📁 Gestión de publicaciones
+- 🏷️ Sistema de categorías y etiquetas
+- 🔍 Búsqueda y filtrado avanzado
+- 📄 Soporte para múltiples tipos de archivo
+- 👥 Roles de usuario (admin/usuario)
+- 🌐 Vista pública y privada
 
-1. Clone the repository:
-    ```
-    git clone https://github.com/fdevmx/repolit.git
-    cd repolit
-    ```
+## Requisitos del Sistema
 
-2. Create a virtual environment:
-    ```
-    python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
-   
-   tall the required packages:
-   
-   ```
-    pip install -r requirements.txt
-   ``` 
-   up your environment variables in the `.env` file.
+- Python 3.8 o superior
+- PostgreSQL 12 o superior
+- pip (gestor de paquetes de Python)
+- Navegador web moderno
 
-## Usage
+## Instalación
 
-To start the application, run:
+1. Clonar el repositorio:
+```bash
+git clone https://github.com/fdevmx/repolit.git
+cd repolit
 ```
-python app.py
+
+2. Crear y activar entorno virtual:
+```bash
+python -m venv venv
+# Windows
+venv\Scripts\activate
+# Linux/Mac
+source venv/bin/activate
 ```
 
-Visit `http://localhost:5000` in your web browser to access the application.
+3. Instalar dependencias:
+```bash
+pip install -r requirements.txt
+```
 
-## Project Structure
+## Configuración
+
+1. Crear archivo `.env` en la raíz del proyecto:
+```env
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=repolit
+DB_USER=your_user
+DB_PASSWORD=your_password
+
+# App
+SECRET_KEY=your_secret_key
+UPLOAD_FOLDER=uploads
+```
+
+2. Configurar base de datos:
+```bash
+# Crear base de datos en PostgreSQL
+createdb repolit
+
+# Ejecutar script de inicialización
+psql -d repolit -f schema.sql
+```
+
+## Uso
+
+1. Iniciar la aplicación:
+```bash
+streamlit run app.py
+```
+
+2. Acceder a la aplicación:
+- Vista pública: `http://localhost:8501`
+- Panel de administración: `http://localhost:8501/?vista=login`
+
+### Roles de Usuario
+
+#### Usuario Público
+- Ver publicaciones públicas
+- Filtrar por categorías y etiquetas
+- Descargar archivos públicos
+
+#### Usuario Registrado
+- Crear publicaciones
+- Gestionar publicaciones propias
+- Acceso a panel personal
+
+#### Administrador
+- Gestionar categorías
+- Gestionar etiquetas
+- Acceso completo al sistema
+
+## Estructura del Proyecto
 
 ```
 repolit/
-├── .env
-├── app.py
-├── config.py
-├── requirements.txt
-├── README.md
-│
-├── backend/
-│   ├── __init__.py
-│   ├── models.py
-│   ├── controllers/
-│   │   ├── __init__.py
-│   │   ├── auth_controller.py
-│   │   ├── file_controller.py
-│   │   └── category_controller.py
-│   ├── services/
-│   │   ├── __init__.py
-│   │   └── supabase_service.py
-│   ├── hooks/
-│   │   ├── __init__.py
-│   │   └── auth_hooks.py
-│   └── utils/
-│       ├── __init__.py
-│       └── helpers.py
-│
 ├── frontend/
-│   ├── __init__.py
-│   ├── views/
-│   │   ├── __init__.py
-│   │   ├── login_view.py
-│   │   ├── register_view.py
-│   │   ├── file_view.py
-│   │   ├── file_upload.py
-│   │   └── dashboard_view.py
-│   └── components/
-│       ├── __init__.py
-│       ├── menu_sidebar.py
-│       ├── file_card.py
-│       └── header.py
-│
-└── assets/
-      └── images/
+│   ├── views/                 # Vistas de la aplicación
+│   │   ├── view_private_general.py    # Panel principal
+│   │   ├── view_public_apps.py        # Vista pública
+│   │   └── ...
+│   └── components/            # Componentes reutilizables
+│       ├── sidebar_private_component.py
+│       └── sidebar_public_component.py
+├── backend/
+│   ├── auth/                 # Autenticación
+│   ├── data/                 # Acceso a datos
+│   ├── storage/              # Gestión de archivos
+│   └── db/                   # Conexión a base de datos
+└── uploads/                  # Archivos subidos
 ```
 
+## Base de Datos
 
-## License
+### Tablas Principales
+- `users`: Gestión de usuarios
+- `publications`: Publicaciones
+- `categories`: Categorías
+- `tags`: Etiquetas
+- `publication_tags`: Relación publicaciones-etiquetas
 
-This project is licensed under the GNU v3 License. See the LICENSE file for details.
+### Esquema de Datos
+```sql
+
+-- ...más tablas en schema.sql
+```
+
+## Funcionalidades
+
+### Gestión de Publicaciones
+- Crear, editar y eliminar publicaciones
+- Asignar categorías y etiquetas
+- Adjuntar archivos (PDF, imágenes, etc.)
+- Marcar como destacado o privado
+
+### Sistema de Filtros
+- Búsqueda por título/descripción
+- Filtrado por categorías
+- Filtrado por etiquetas
+- Vista de publicaciones propias
+
+### Gestión de Archivos
+- Soporte para múltiples formatos
+- Previsualización de imágenes y PDFs
+- Sistema de descarga segura
+- Almacenamiento organizado
+
+## Licencia
+
+Este proyecto está licenciado bajo GNU v3. Ver archivo LICENSE para más detalles.
