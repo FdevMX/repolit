@@ -1,6 +1,14 @@
 import streamlit as st
+from backend.auth.auth_service import is_authenticated, get_current_user, is_admin
 
 def view_create_publication():
+    # Verificar autenticación
+    if not is_authenticated():
+        st.warning("Debes iniciar sesión para acceder a esta página")
+        st.session_state.vista = "login"
+        st.rerun()
+        return
+
     st.markdown("## Crear nueva publicación")
     st.write("")
 
@@ -9,12 +17,12 @@ def view_create_publication():
     description = st.text_area("Descripción")
     category = st.selectbox("Categoría", ["Seguridad en computo", "Desarrollo de apps móviles", "Inteligencia artificial"])
     tags = st.multiselect("Tags", ["Redes", "Cisco", "IA", "VSCode", "HTML", "Javascript"])
-    
+
     # Subida de archivo (ahora a ancho completo sin la opción de enlace)
     file = st.file_uploader("Seleccionar archivo")
 
     st.write("")  # Espacio antes de los botones
-    
+
     # Botones de acción centrados
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
