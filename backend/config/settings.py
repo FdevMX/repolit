@@ -22,12 +22,23 @@ def get_db_config():
         }
     except:
         # Fallback a variables de entorno
+        use_database = os.getenv("USE_DATABASE", "false").lower() == "true"
+        if not use_database:
+            return None
+            
+        # Verificar que existan las variables requeridas
+        required_vars = ["DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD"]
+        missing_vars = [var for var in required_vars if not os.getenv(var)]
+        
+        if missing_vars:
+            raise EnvironmentError(f"Faltan variables de entorno requeridas: {', '.join(missing_vars)}")
+            
         return {
-            "host": os.getenv("DB_HOST", "localhost"),
-            "port": int(os.getenv("DB_PORT", "5432")),
-            "dbname": os.getenv("DB_NAME", "repolit"),
-            "user": os.getenv("DB_USER", "postgres"),
-            "password": os.getenv("DB_PASSWORD", ""),
+            "host": os.getenv("DB_HOST"),
+            "port": int(os.getenv("DB_PORT")),
+            "dbname": os.getenv("DB_NAME"),
+            "user": os.getenv("DB_USER"),
+            "password": os.getenv("DB_PASSWORD"),
         }
 
 # Valores de configuración
