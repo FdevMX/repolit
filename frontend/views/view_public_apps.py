@@ -1,7 +1,46 @@
 import streamlit as st
 from frontend.components.card_component import card_component
+from backend.data.category_data import get_categories
+from backend.auth.auth_service import is_authenticated
 
 def view_public_apps():
+    # Sidebar para vista pública
+    with st.sidebar:
+        st.title("Categorías")
+
+        # Obtener todas las categorías de la base de datos
+        categories = get_categories()
+        category_names = [cat["name"] for cat in categories]
+
+        # Añadir otras opciones de navegación
+        all_options = category_names + ["Archivos disponibles", "Vista de archivo"]
+
+        # Añadir opciones de autenticación solo si no está autenticado
+        if not is_authenticated():
+            all_options += ["Iniciar sesión", "Registrarse"]
+        else:
+            all_options += ["Ir a mi panel"]
+
+        opcion = st.radio("Filtrar por:", all_options)
+
+        # Lógica de navegación
+        if opcion == "Vista de archivo":
+            st.session_state.vista = "public_appsview"
+            st.rerun()
+        elif opcion == "Iniciar sesión":
+            st.session_state.vista = "login"
+            st.rerun()
+        elif opcion == "Registrarse":
+            st.session_state.vista = "register"
+            st.rerun()
+        elif opcion == "Ir a mi panel":
+            st.session_state.vista = "private_general"
+            st.rerun()
+
+    # Contenido principal
+    st.title("Repositorio Digital")
+
+    # Resto del contenido...
     st.markdown("## Archivos disponibles")
     st.write("")
 
