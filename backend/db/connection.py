@@ -57,7 +57,7 @@ def execute_query(query, params=None, fetchone=False, commit=False):
         if commit:
             conn.rollback()
         st.error(f"Error en la consulta: {e}")
-        raise
+        raise e
 
 def test_connection():
     """
