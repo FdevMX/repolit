@@ -7,86 +7,31 @@ from frontend.views.view_public_appsview import view_public_appsview
 from frontend.views.view_private_general import view_private_general
 from frontend.views.view_create_publication import view_create_publication
 from frontend.views.view_manage_categories import view_manage_categories
-
+from backend.auth.auth_service import logout, is_authenticated
 
 def main():
-    # Inicializar el estado si no existe
+    # Primero verificar autenticación para mantener sesiones
+    if 'authenticated' in st.session_state and st.session_state.authenticated:
+        # Si ya hay una sesión activa pero estamos en una vista pública o de login
+        if 'vista' not in st.session_state or st.session_state.vista in ["public_apps", "login", "register"]:
+            # Redirigir a la vista privada
+            st.session_state.vista = "private_general"
+    elif is_authenticated():
+        # La función is_authenticated verifica si hay una sesión válida
+        # Si no está en session_state pero la función dice que sí, restauramos
+        st.session_state.vista = "private_general"
+    
+    # Inicializar el estado solo si no existe en absoluto
     if 'vista' not in st.session_state:
         st.session_state.vista = "public_apps"
 
-    # Sidebar con radio que refleja el estado actual
-    st.sidebar.title("Categorias")
-    opcion = st.sidebar.radio(
-        "Ir a:",
-        (
-            "Seguridad en computo",
-            "Desarrollo de apps móviles",
-            "Inteligencia artificial",
-            "Análisis de vulnerabilidades",
-            "Redes y conmutadores",
-            "Sistemas operativos",
-            "Archivos disponibles",
-            "Vista de archivo",
-            "Iniciar sesión",
-            "Registrarse",
-            "Todas las publicaciones",
-            "Crear nueva publicación",
-            "Gestionar categorías",
-            "Ir a la página pública",
-            "Cerrar sesión",
-        ),
-        index=[
-            "public_apps",
-            "public_apps",
-            "public_apps",
-            "public_apps",
-            "public_apps",
-            "public_apps",
-            "public_apps",
-            "public_appsview",
-            "login",
-            "register",
-            "private_general",
-            "create_publication",
-            "manage_categories",
-            "public_apps",
-            "login",
-        ].index(st.session_state.vista),
-    )
-
-    # Actualizar el estado cuando cambia el radio
-    if opcion == "Seguridad en computo":
-        st.session_state.vista = "public_apps"
-    elif opcion == "Desarrollo de apps móviles":
-        st.session_state.vista = "public_apps"
-    elif opcion == "Inteligencia artificial":
-        st.session_state.vista = "public_apps"
-    elif opcion == "Análisis de vulnerabilidades":
-        st.session_state.vista = "public_apps"
-    elif opcion == "Redes y conmutadores":
-        st.session_state.vista = "public_apps"
-    elif opcion == "Sistemas operativos":
-        st.session_state.vista = "public_apps"
-    elif opcion == "Archivos disponibles":
-        st.session_state.vista = "public_apps"
-    elif opcion == "Vista de archivo":
-        st.session_state.vista = "public_appsview"
-    elif opcion == "Iniciar sesión":
+    # Manejar la lógica de cierre de sesión en la parte principal
+    if st.session_state.vista == "logout":
+        logout()  # Limpia la sesión de usuario
         st.session_state.vista = "login"
-    elif opcion == "Registrarse":
-        st.session_state.vista = "register"
-    elif opcion == "Todas las publicaciones":
-        st.session_state.vista = "private_general"
-    elif opcion == "Crear nueva publicación":
-        st.session_state.vista = "create_publication"
-    elif opcion == "Gestionar categorías":
-        st.session_state.vista = "manage_categories"
-    elif opcion == "Ir a la página pública":
-        st.session_state.vista = "public_apps"
-    elif opcion == "Cerrar sesión":
-        st.session_state.vista = "login"
+        st.rerun()
 
-    # Mostrar vista según el estado
+    # Mostrar vista según el estado actual
     if st.session_state.vista == "public_apps":
         view_public_apps()
     elif st.session_state.vista == "public_appsview":
