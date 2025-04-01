@@ -13,9 +13,9 @@ def create_tables():
     """Crea todas las tablas necesarias en la base de datos si no existen."""
     # Obtener la configuración de la base de datos
     config = get_db_config()
-    
+
     print(f"🔌 Conectando a: {config['host']}:{config['port']}, DB: {config['dbname']}")
-    
+
     # Conectar a PostgreSQL
     conn = psycopg2.connect(
         host=config["host"],
@@ -24,11 +24,11 @@ def create_tables():
         user=config["user"],
         password=config["password"]
     )
-    
+
     # Lista de tablas que vamos a verificar
     tables_to_check = ['users', 'categories', 'tags', 'publications', 'publication_tags']
     existing_tables = []
-    
+
     # Verificar qué tablas ya existen
     with conn.cursor() as cur:
         cur.execute("""
@@ -37,16 +37,16 @@ def create_tables():
             WHERE table_schema='public' AND table_type='BASE TABLE'
         """)
         existing_tables = [row[0] for row in cur.fetchall()]
-        
+
     print(f"\n🔍 Verificando tablas existentes: {', '.join(existing_tables) if existing_tables else 'ninguna'}")
-    
+
     # Crear tablas
     with conn.cursor() as cur:
         # Extensión para UUID (siempre intentamos crearla, es idempotente)
         print("\n🧩 Configurando extensiones...")
         cur.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";')
         print("✅ Extensión UUID configurada")
-        
+
         # Función para actualización automática (siempre la actualizamos)
         print("\n⏱️ Configurando función de actualización automática...")
         cur.execute('''
@@ -59,7 +59,7 @@ def create_tables():
             $$ LANGUAGE plpgsql;
         ''')
         print("✅ Función temporal creada")
-        
+
         # Tabla: users
         if 'users' not in existing_tables:
             print("\n👤 Creando tabla de usuarios...")
@@ -78,7 +78,7 @@ def create_tables():
             print("✅ Tabla users creada")
         else:
             print("ℹ️ La tabla users ya existe, omitiendo...")
-        
+
         # Tabla: categories
         if 'categories' not in existing_tables:
             print("\n📋 Creando tabla de categorías...")
@@ -90,7 +90,7 @@ def create_tables():
                     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                 );
             ''')
-            
+
             # Trigger para updated_at en categories
             cur.execute('''
                 DROP TRIGGER IF EXISTS update_categories_updated_at ON categories;
@@ -109,25 +109,29 @@ def create_tables():
                 FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
             ''')
             print("✅ Trigger de categories verificado")
-        
+
         # Tabla: tags
         if 'tags' not in existing_tables:
             print("\n🏷️ Creando tabla de etiquetas...")
-            cur.execute('''
+            cur.execute(
+                """
                 CREATE TABLE tags (
                     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                     name VARCHAR(100) UNIQUE NOT NULL,
-                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                 );
-            ''')
+            """
+            )
             print("✅ Tabla tags creada")
         else:
             print("ℹ️ La tabla tags ya existe, omitiendo...")
-        
+
         # Tabla: publications
         if 'publications' not in existing_tables:
             print("\n📄 Creando tabla de publicaciones...")
-            cur.execute('''
+            cur.execute(
+                """
                 CREATE TABLE publications (
                     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
                     title VARCHAR(255) NOT NULL,
@@ -135,14 +139,17 @@ def create_tables():
                     file_url TEXT,
                     file_name VARCHAR(255),
                     file_type VARCHAR(100),
-                    file_size INTEGER,
+                    file_size BIGINT,
                     category_id UUID REFERENCES categories(id),
                     user_id UUID REFERENCES users(id),
+                    is_featured BOOLEAN DEFAULT FALSE,
+                    is_public BOOLEAN DEFAULT TRUE,
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                 );
-            ''')
-            
+            """
+            )
+
             # Trigger para updated_at en publications
             cur.execute('''
                 DROP TRIGGER IF EXISTS update_publications_updated_at ON publications;
@@ -161,7 +168,7 @@ def create_tables():
                 FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
             ''')
             print("✅ Trigger de publications verificado")
-        
+
         # Tabla: publication_tags
         if 'publication_tags' not in existing_tables:
             print("\n🔗 Creando tabla de relaciones entre publicaciones y etiquetas...")
@@ -175,10 +182,10 @@ def create_tables():
             print("✅ Tabla publication_tags creada")
         else:
             print("ℹ️ La tabla publication_tags ya existe, omitiendo...")
-        
+
         # Confirmar los cambios
         conn.commit()
-        
+
     # Verificar nuevamente qué tablas existen ahora
     with conn.cursor() as cur:
         cur.execute("""
@@ -187,16 +194,16 @@ def create_tables():
             WHERE table_schema='public' AND table_type='BASE TABLE'
         """)
         existing_tables = [row[0] for row in cur.fetchall()]
-        
+
         # Verificar si todas las tablas necesarias existen
         all_tables_exist = all(table in existing_tables for table in tables_to_check)
-        
+
         if all_tables_exist:
             print("\n✅ Todas las tablas necesarias están disponibles")
         else:
             missing = [table for table in tables_to_check if table not in existing_tables]
             print(f"\n⚠️ Advertencia: Faltan algunas tablas: {', '.join(missing)}")
-    
+
     conn.close()
 
 def insert_initial_data():
