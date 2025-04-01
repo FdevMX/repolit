@@ -178,7 +178,6 @@ session_cookies/
 
 # Files folder and data
 files/
-data/
 
 # credentials
 .credentials.toml
