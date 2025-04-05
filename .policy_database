@@ -1,0 +1,122 @@
+-- Habilitar RLS en todas las tablas
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tags ENABLE ROW LEVEL SECURITY;
+ALTER TABLE publications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE publication_tags ENABLE ROW LEVEL SECURITY;
+
+-- Políticas para la tabla users
+CREATE POLICY "Users can view their own profile" 
+ON users FOR SELECT
+USING (auth.uid() = id);
+
+CREATE POLICY "Only admins can create users" 
+ON users FOR INSERT 
+TO authenticated
+WITH CHECK (auth.role() = 'admin');
+
+-- Políticas para categorías
+CREATE POLICY "Categories are viewable by everyone" 
+ON categories FOR SELECT
+USING (true);
+
+CREATE POLICY "Only admins can insert categories" 
+ON categories FOR INSERT
+TO authenticated
+WITH CHECK (auth.role() = 'admin');
+
+CREATE POLICY "Only admins can update categories" 
+ON categories FOR UPDATE
+TO authenticated
+USING (auth.role() = 'admin');
+
+CREATE POLICY "Only admins can delete categories" 
+ON categories FOR DELETE
+TO authenticated
+USING (auth.role() = 'admin');
+
+-- Políticas para tags
+CREATE POLICY "Tags are viewable by everyone" 
+ON tags FOR SELECT
+USING (true);
+
+CREATE POLICY "Only admins can insert tags" 
+ON tags FOR INSERT
+TO authenticated
+WITH CHECK (auth.role() = 'admin');
+
+CREATE POLICY "Only admins can update tags" 
+ON tags FOR UPDATE
+TO authenticated
+USING (auth.role() = 'admin');
+
+CREATE POLICY "Only admins can delete tags" 
+ON tags FOR DELETE
+TO authenticated
+USING (auth.role() = 'admin');
+
+-- Políticas para publicaciones
+CREATE POLICY "Users can view public publications" 
+ON publications FOR SELECT
+USING (is_public = true OR user_id = auth.uid());
+
+-- Para INSERT, necesitamos WITH CHECK
+CREATE POLICY "Users can insert their own publications" 
+ON publications FOR INSERT
+TO authenticated
+WITH CHECK (user_id = auth.uid());
+
+-- Para UPDATE y DELETE, usamos USING
+CREATE POLICY "Users can update their own publications" 
+ON publications FOR UPDATE
+TO authenticated
+USING (user_id = auth.uid());
+
+CREATE POLICY "Users can delete their own publications" 
+ON publications FOR DELETE
+TO authenticated
+USING (user_id = auth.uid());
+
+-- Políticas para admins (separadas para claridad)
+CREATE POLICY "Admins can manage all publications" 
+ON publications FOR ALL
+TO authenticated
+USING (auth.role() = 'admin');
+
+-- Políticas para relaciones publicación-etiqueta
+CREATE POLICY "Publication tags are viewable by everyone" 
+ON publication_tags FOR SELECT
+USING (true);
+
+CREATE POLICY "Users can insert publication tags for their publications" 
+ON publication_tags FOR INSERT
+TO authenticated
+WITH CHECK (
+    EXISTS (
+        SELECT 1 FROM publications p
+        WHERE p.id = publication_id
+        AND p.user_id = auth.uid()
+    )
+);
+
+CREATE POLICY "Users can update publication tags for their publications" 
+ON publication_tags FOR UPDATE
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM publications p
+        WHERE p.id = publication_id
+        AND p.user_id = auth.uid()
+    )
+);
+
+CREATE POLICY "Users can delete publication tags for their publications" 
+ON publication_tags FOR DELETE
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1 FROM publications p
+        WHERE p.id = publication_id
+        AND p.user_id = auth.uid()
+    )
+);

@@ -1,0 +1,71 @@
+Configuración de Políticas en la Interfaz Web de Supabase Storage
+Voy a indicarte exactamente qué operaciones seleccionar para cada política en la interfaz web de Supabase:
+
+Política 1: Lectura pública
+Operación a seleccionar: SELECT Restricción de autenticación: Public (anyone) Definición de política:
+    bucket_id = 'datelit' 
+    AND EXISTS (
+    SELECT 1 FROM publications p
+    WHERE p.file_url = name 
+    AND p.is_public = true
+    )
+
+Política 2: Lectura para usuarios autenticados
+Operación a seleccionar: SELECT Restricción de autenticación: Authenticated users only Definición de política:
+    bucket_id = 'datelit' 
+    AND (
+      STARTS_WITH(name, auth.uid()::text) 
+      OR
+      EXISTS (
+        SELECT 1 FROM publications p
+        WHERE p.file_url = name 
+        AND p.user_id = auth.uid()
+      )
+    )
+
+Política 3: Subida de archivos
+Operación a seleccionar: INSERT Restricción de autenticación: Authenticated users only Definición de política:
+    bucket_id = 'datelit' 
+    AND auth.role() = 'authenticated'
+    AND STARTS_WITH(name, auth.uid()::text)
+
+Política 4: Eliminación de archivos
+Operación a seleccionar: DELETE Restricción de autenticación: Authenticated users only Definición de política:
+    bucket_id = 'datelit' 
+    AND (
+      STARTS_WITH(name, auth.uid()::text)
+      OR
+      auth.role() = 'service_role'
+      OR
+      EXISTS (
+        SELECT 1 FROM publications p
+        WHERE p.file_url = name 
+        AND p.user_id = auth.uid()
+      )
+    )
+
+Política 5: Actualización de archivos (si es necesario)
+Operación a seleccionar: UPDATE Restricción de autenticación: Authenticated users only Definición de política:
+    bucket_id = 'datelit' 
+    AND (
+    STARTS_WITH(name, auth.uid()::text)
+    OR
+    EXISTS (
+        SELECT 1 FROM publications p
+        WHERE p.file_url = name 
+        AND p.user_id = auth.uid()
+    )
+    )
+
+Instrucciones para añadir cada política:
+    Ve a Storage en el menú lateral
+    Selecciona tu bucket datelit
+    Haz clic en la pestaña Policies
+    Haz clic en New Policy
+    Selecciona el tipo de política (Custom policy)
+    Selecciona la operación correspondiente (SELECT, INSERT, DELETE o UPDATE)
+    Elige la restricción de autenticación (Public o Authenticated)
+    Pega la definición de política correspondiente
+    Dale un nombre descriptivo (opcional)
+    Haz clic en Save Policy
+    Repite estos pasos para cada una de las políticas. Recuerda que cada política debe ser creada por separado, seleccionando la operación específica que corresponde.
