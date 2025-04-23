@@ -294,28 +294,6 @@ div[data-baseweb="menu"] ul {
     text-overflow: ellipsis;
 }
 
-/* .card-date {
-    margin: 0.3rem 0;
-    color: var(--color-gray-dark);
-    font-size: 0.9rem;
-} */
-
-/* .card-tags {
-    margin-top: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-} */
-
-/* .tag {
-    display: inline-block;
-    background-color: var(--button-background);
-    color: var(--button-hover-text);
-    padding: 0.2rem 0.5rem;
-    border-radius: 5px;
-    font-size: 0.8rem;
-    white-space: nowrap;
-} */
 
 .card-actions {
     display: flex;
