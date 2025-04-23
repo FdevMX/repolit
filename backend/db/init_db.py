@@ -144,6 +144,8 @@ def create_tables():
                     user_id UUID REFERENCES users(id),
                     is_featured BOOLEAN DEFAULT FALSE,
                     is_public BOOLEAN DEFAULT TRUE,
+                    is_external BOOLEAN DEFAULT FALSE,
+                    media_type VARCHAR(50),
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                 );
