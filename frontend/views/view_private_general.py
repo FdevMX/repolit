@@ -212,48 +212,142 @@ def view_private_general():
                     is_public = st.checkbox("Publicación pública", value=publication.get('is_public', True),
                                          help="Si no se marca, quedará como borrador")
 
-                # Opción para reemplazar el archivo
-                if publication.get('file_name'):
-                    st.write(f"**Archivo actual:** {publication['file_name']}")
-                else:
-                    st.write("**No hay archivo adjunto**")
-
-                new_file = st.file_uploader("Reemplazar archivo (opcional)")
-
-                # Mostrar vista previa si es una imagen en un expander
-                if publication.get('file_type') and publication['file_type'].startswith('image/'):
-                    with st.expander("Vista previa de la imagen actual", expanded=False):
-                        try:
-                            from PIL import Image
-                            import os
-                            from backend.storage.file_handler import get_file_path
-
-                            file_path = get_file_path(publication['file_url'])
-                            if os.path.exists(file_path):
-                                image = Image.open(file_path)
-                                st.image(image, caption="Imagen actual", width=300)
-                        except Exception as e:
-                            st.warning(f"No se pudo cargar la vista previa de la imagen: {e}")
+                # Determinar si la publicación actual es una URL externa o un archivo local
+                is_external_content = publication.get('is_external', False)
+                initial_content_type = "URL Externa" if is_external_content else "Archivo Local"
+                
+                # Opciones de tipo de contenido
+                # st.write("**Tipo de contenido:**")
+                content_type_options = ["Archivo Local", "URL Externa"]
+                new_content_type = st.radio(
+                    "Tipo de contenido",
+                    options=content_type_options,
+                    index=content_type_options.index(initial_content_type),
+                    horizontal=True
+                )
+                
+                # Manejar la entrada según el tipo de contenido seleccionado
+                if new_content_type == "Archivo Local":
+                    # Mostrar información del archivo actual si existe
+                    if publication.get('file_name') and not is_external_content:
+                        st.write(f"**Archivo actual:** {publication['file_name']}")
+                    elif is_external_content:
+                        st.warning("⚠️ Cambiar a archivo local eliminará la URL externa actual")
+                    else:
+                        st.write("**No hay archivo adjunto**")
+                    
+                    # Opción para subir un nuevo archivo
+                    new_file = st.file_uploader("Seleccionar nuevo archivo (opcional)")
+                    
+                    # Mostrar vista previa si es una imagen en un expander
+                    if publication.get('file_type') and publication['file_type'].startswith('image/') and not is_external_content:
+                        with st.expander("Vista previa de la imagen actual", expanded=False):
+                            try:
+                                from PIL import Image
+                                import os
+                                from backend.storage.file_handler import get_file_path
+                
+                                file_path = get_file_path(publication['file_url'])
+                                if os.path.exists(file_path):
+                                    image = Image.open(file_path)
+                                    st.image(image, caption="Imagen actual", width=300)
+                            except Exception as e:
+                                st.warning(f"No se pudo cargar la vista previa de la imagen: {e}")
+                
+                else:  # URL Externa
+                    # Mostrar la URL actual si existe y es externa
+                    current_url = publication.get('file_url', '') if is_external_content else ''
+                    current_media_type = publication.get('media_type', 'video').capitalize() if is_external_content else 'Video'
+                    
+                    if is_external_content and current_url:
+                        st.write(f"**URL actual:** {current_url}")
+                    else:
+                        st.warning("⚠️ Cambiar a URL externa eliminará el archivo local actual")
+                    
+                    # Campo para ingresar URL
+                    new_content_url = st.text_input(
+                        "URL del contenido", 
+                        value=current_url,
+                        placeholder="https://youtube.com/watch?v=...",
+                        help="Ingresa la URL del video o sitio web que deseas enlazar"
+                    )
+                    
+                    # Selector de tipo de contenido para URLs
+                    new_media_type = st.selectbox(
+                        "Tipo de contenido",
+                        options=["Video", "Audio"],
+                        index=0 if current_media_type == "Video" else 1,
+                        help="Selecciona cómo se reproducirá este contenido"
+                    )
+                    
+                    # Para mantener compatibilidad con el código existente
+                    new_file = None
+                
+                    # Si es una URL de YouTube y el tipo es audio, mostrar información
+                    if new_media_type == "Audio" and new_content_url:
+                        from backend.storage.youtube_handler import is_youtube_url
+                        if is_youtube_url(new_content_url):
+                            st.info("ℹ️ El audio se extraerá del video de YouTube seleccionado")
+                        else:
+                            st.warning("⚠️ La reproducción como audio solo funciona con URLs de YouTube")
 
                 col1, col2 = st.columns(2)
                 with col1:
                     if st.button("Guardar cambios", key="save_pub_edit", use_container_width=True):
                         with st.spinner("Actualizando publicación..."):
                             try:
-                                # Procesar archivo si se subió uno nuevo
+                                # Procesar archivo o URL según el tipo de contenido
                                 new_file_info = None
-                                if new_file:
+                                
+                                if new_content_type == "Archivo Local" and new_file:
+                                    # Subida de nuevo archivo local
                                     new_file_info = save_uploaded_file(new_file, user['id'])
                                     if not new_file_info:
                                         st.error("Error al guardar el archivo.")
                                         return
-
+                                elif new_content_type == "URL Externa" and new_content_url:
+                                    # Procesar URL externa
+                                    if not new_content_url.startswith(('http://', 'https://')):
+                                        st.error("Por favor, ingresa una URL válida que comience con http:// o https://")
+                                        return
+                                        
+                                    # Si el tipo de medio es audio y es una URL de YouTube, extraer información de audio
+                                    if new_media_type.lower() == "audio":
+                                        from backend.storage.youtube_handler import is_youtube_url, extract_audio_from_youtube
+                                        if is_youtube_url(new_content_url):
+                                            # Obtener info del audio de YouTube
+                                            youtube_info = extract_audio_from_youtube(new_content_url, user['id'])
+                                            if not youtube_info:
+                                                st.error("No se pudo procesar el audio del video de YouTube.")
+                                                return
+                                                
+                                            # Normalizar los nombres de campo para que coincidan con lo que espera update_publication
+                                            new_file_info = {
+                                                "file_url": youtube_info.get("url", ""),
+                                                "file_name": youtube_info.get("filename", "youtube_audio"),
+                                                "file_type": youtube_info.get("content_type", "url"),
+                                                "is_external": youtube_info.get("is_external", True),
+                                                "media_type": youtube_info.get("media_type", "audio")
+                                            }
+                                        else:
+                                            st.error("La reproducción como audio solo funciona con URLs de YouTube.")
+                                            return
+                                    else:
+                                        # Para video o URLs que no son para audio
+                                        new_file_info = {
+                                            "file_url": new_content_url,
+                                            "is_external": True,
+                                            "file_name": "external_content",
+                                            "file_type": "url",
+                                            "media_type": new_media_type.lower()
+                                        }
+                                    
                                 # Obtener id de categoría
                                 category_obj = get_category_by_name(new_category)
                                 if not category_obj:
                                     st.error(f"La categoría '{new_category}' no se encontró.")
                                     return
-
+                        
                                 # Datos a actualizar
                                 update_data = {
                                     'title': new_title,
@@ -262,7 +356,10 @@ def view_private_general():
                                     'is_featured': is_featured,
                                     'is_public': is_public
                                 }
-
+                        
+                                # Añadir mensaje de debug para ver qué se está enviando
+                                # st.info(f"Actualizando con datos: {update_data} y archivo: {new_file_info}")
+                                
                                 # Actualizar publicación
                                 updated = update_publication(
                                     st.session_state.edit_pub_id,
@@ -270,7 +367,7 @@ def view_private_general():
                                     new_file_info,
                                     new_tags
                                 )
-
+                        
                                 if updated:
                                     st.success("Publicación actualizada correctamente.")
                                     time.sleep(1)
@@ -280,7 +377,7 @@ def view_private_general():
                                     st.error("Error al actualizar la publicación.")
                             except Exception as e:
                                 st.error(f"Error: {str(e)}")
-
+                                
                 with col2:
                     if st.button("Cancelar", key="cancel_pub_edit", use_container_width=True):
                         st.session_state.edit_pub_modal = False
