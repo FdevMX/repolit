@@ -181,3 +181,5 @@ files/
 
 # credentials
 .credentials.toml
+
+uploads/
