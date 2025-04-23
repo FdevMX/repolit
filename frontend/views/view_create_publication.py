@@ -7,6 +7,7 @@ from backend.data.tag_data import get_tags
 from backend.data.publication_data import create_publication
 from backend.storage.file_handler import save_uploaded_file
 from frontend.components.sidebar_private_component import show_sidebar
+from backend.storage.youtube_handler import extract_audio_from_youtube, is_youtube_url
 
 
 def view_create_publication():
@@ -58,7 +59,7 @@ def view_create_publication():
         tag_names = []
 
     # Opciones de contenido (fuera del formulario)
-    subtitle = st.subheader("Antes de continuar selecciona el tipo de contenido")
+    subtitle = st.subheader("Antes de continuar selecciona el tipo de archivo")
     options = ["Archivo Local", "URL Externa"]
     selection = st.segmented_control(
         "Tipo de contenido", options, selection_mode="single",
@@ -104,6 +105,15 @@ def view_create_publication():
                 placeholder="https://youtube.com/jkkhjkh",
                 help="Ingresa la URL del video o sitio web que deseas enlazar",
             )
+            
+            # Selector de tipo de contenido para URLs
+            media_type = st.selectbox(
+                "Tipo de contenido",
+                options=["Video", "Audio"],
+                key="pub_media_type",
+                help="Selecciona cómo se reproducirá este contenido"
+            )
+            
             uploaded_file = None
 
         # Opciones de publicación
@@ -149,14 +159,29 @@ def view_create_publication():
                         if not file_info:
                             st.error("Error al guardar el archivo. Inténtalo de nuevo.")
                             return
+                        
+                    # Dentro del bloque donde procesas la URL:
                     elif content_type == "URL de video/sitio web" and content_url:
-                        # Guardar la URL en lugar de un archivo
-                        file_info = {
-                            "url": content_url,
-                            "is_external": True,
-                            "filename": "external_content",
-                            "content_type": "url"
-                        }
+                        # Verificar si es una URL válida
+                        if not content_url.startswith(('http://', 'https://')):
+                            st.error("Por favor, ingresa una URL válida que comience con http:// o https://")
+                            return
+                            
+                        # Si el tipo de medio es audio y es una URL de YouTube, extraer audio
+                        if media_type.lower() == "audio" and is_youtube_url(content_url):
+                            file_info = extract_audio_from_youtube(content_url, user['id'])
+                            if not file_info:
+                                st.error("No se pudo extraer el audio del video de YouTube.")
+                                return
+                        else:
+                            # Para video o URLs que no son de YouTube, guardar la URL directamente
+                            file_info = {
+                                "url": content_url,
+                                "is_external": True,
+                                "filename": "external_content",
+                                "content_type": "url",
+                                "media_type": media_type.lower()
+                            }
                     else:
                         # Validación para cuando no hay archivo o URL
                         if content_type == "Archivo":
