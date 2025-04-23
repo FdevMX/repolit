@@ -189,55 +189,60 @@ def create_publication(title, description, category_id, user_id, is_featured=Fal
     try:
         # Generar un UUID para la nueva publicación
         publication_id = str(uuid.uuid4())
-        
+
         # Preparar los campos de archivo (si existen)
-        file_url = file_info.get("file_url") if file_info else None
-        file_name = file_info.get("file_name") if file_info else None
-        file_type = file_info.get("file_type") if file_info else None
+        file_url = file_info.get("url", file_info.get("file_url")) if file_info else None
+        file_name = file_info.get("filename", file_info.get("file_name")) if file_info else None
+        file_type = file_info.get("content_type", file_info.get("file_type")) if file_info else None
         file_size = file_info.get("file_size") if file_info else None
-        
+        is_external = file_info.get("is_external", False) if file_info else False
+        media_type = file_info.get("media_type") if file_info else None
+
         # Insertar la publicación
         query = """
         INSERT INTO publications (
             id, title, description, category_id, user_id,
             file_url, file_name, file_type, file_size,
-            is_featured, is_public, created_at, updated_at
+            is_featured, is_public, is_external, media_type,
+            created_at, updated_at
         )
         VALUES (
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
         )
         RETURNING id, title, description, category_id, user_id, 
-                 file_url, file_name, file_type, file_size,
-                 is_featured, is_public, created_at, updated_at
+                file_url, file_name, file_type, file_size,
+                is_featured, is_public, is_external, media_type,
+                created_at, updated_at
         """
-        
+
         new_publication = execute_query(
             query, 
             (publication_id, title, description, category_id, user_id, 
-             file_url, file_name, file_type, file_size,
-             is_featured, is_public),
+            file_url, file_name, file_type, file_size,
+            is_featured, is_public, is_external, media_type),
             fetchone=True,
             commit=True
         )
-        
+
         # Asociar etiquetas si se proporcionan
         if tag_names and len(tag_names) > 0:
             tags = get_or_create_tags(tag_names)
-            
+
             for tag in tags:
                 tag_query = """
                 INSERT INTO publication_tags (publication_id, tag_id)
                 VALUES (%s, %s)
                 """
                 execute_query(tag_query, (publication_id, tag['id']), commit=True)
-        
+
         logger.info(f"Nueva publicación creada: {title} (ID: {publication_id})")
-        
+
         # Obtener la publicación completa con tags
         result = get_publication_by_id(publication_id)
         result['tags'] = get_publication_tags(publication_id)
         return result
-        
+
     except Exception as e:
         logger.error(f"Error al crear publicación '{title}': {e}")
         return None

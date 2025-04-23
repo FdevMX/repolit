@@ -7,6 +7,7 @@ from backend.data.tag_data import get_tags
 from backend.data.publication_data import create_publication
 from backend.storage.file_handler import save_uploaded_file
 from frontend.components.sidebar_private_component import show_sidebar
+from backend.storage.youtube_handler import extract_audio_from_youtube, is_youtube_url
 
 
 def view_create_publication():
@@ -40,7 +41,7 @@ def view_create_publication():
 
     # Configurar sidebar específico para usuario autenticado
     show_sidebar(user, "create_publication")
-    
+
     # Contenido principal
     st.title("Crear nueva publicación")
     st.write("Completa el formulario para crear una nueva publicación.")
@@ -56,6 +57,14 @@ def view_create_publication():
         st.error(f"Error al cargar datos: {e}")
         category_names = []
         tag_names = []
+
+    # Opciones de contenido (fuera del formulario)
+    subtitle = st.subheader("Antes de continuar selecciona el tipo de archivo")
+    options = ["Archivo Local", "URL Externa"]
+    selection = st.segmented_control(
+        "Tipo de contenido", options, selection_mode="single",
+        key="pub_content_type",
+    )
 
     # Formulario para crear una nueva publicación
     with st.form("publication_form"):
@@ -76,13 +85,36 @@ def view_create_publication():
             selected_tags = st.multiselect("Etiquetas", ["Sin etiquetas disponibles"], key="pub_tags")
             st.warning("No hay etiquetas disponibles. Contacta al administrador.")
 
-        # Subida de archivo
-        file_help = "Puedes subir documentos (.pdf, .doc, .docx), imágenes (.jpg, .png), videos (.mp4, .mov, .avi) u otros archivos relacionados"
-        uploaded_file = st.file_uploader("Seleccionar archivo", key="pub_file", help=file_help)
+        # Dentro del formulario, usar la variable selection directamente
+        if selection == "Archivo Local":
+            # Subida de archivo
+            file_help = "Puedes subir documentos (.pdf, .doc, .docx), imágenes (.jpg, .png), videos (.mp4, .mov, .avi) u otros archivos relacionados"
+            uploaded_file = st.file_uploader(
+                "Seleccionar archivo", key="pub_file", help=file_help
+            )
 
-        # Vista previa del archivo si es una imagen
-        if uploaded_file and uploaded_file.type.startswith('image/'):
-            st.image(uploaded_file, caption="Vista previa de la imagen", width=300)
+            # Vista previa del archivo si es una imagen
+            if uploaded_file and uploaded_file.type.startswith("image/"):
+                st.image(uploaded_file, caption="Vista previa de la imagen", width=300)
+            content_url = None
+        else:
+            # Enlace URL
+            content_url = st.text_input(
+                "URL del contenido",
+                key="pub_url",
+                placeholder="https://youtube.com/jkkhjkh",
+                help="Ingresa la URL del video o sitio web que deseas enlazar",
+            )
+            
+            # Selector de tipo de contenido para URLs
+            media_type = st.selectbox(
+                "Tipo de contenido",
+                options=["Video", "Audio"],
+                key="pub_media_type",
+                help="Selecciona cómo se reproducirá este contenido"
+            )
+            
+            uploaded_file = None
 
         # Opciones de publicación
         col1, col2 = st.columns(2)
@@ -118,13 +150,45 @@ def view_create_publication():
                     # Mostrar ID para depuración (quitar en producción)
                     st.info(f"DEBUG - Usando user_id: {user_current['id']}")
 
-                    # 1. Procesar archivo subido (si existe)
+                    # 1. Procesar archivo subido o URL
                     file_info = None
-                    if uploaded_file:
+                    content_type = "Archivo" if st.session_state.pub_content_type == "Archivo Local" else "URL de video/sitio web"
+                    
+                    if content_type == "Archivo" and uploaded_file:
                         file_info = save_uploaded_file(uploaded_file, user['id'])
                         if not file_info:
                             st.error("Error al guardar el archivo. Inténtalo de nuevo.")
                             return
+                        
+                    # Dentro del bloque donde procesas la URL:
+                    elif content_type == "URL de video/sitio web" and content_url:
+                        # Verificar si es una URL válida
+                        if not content_url.startswith(('http://', 'https://')):
+                            st.error("Por favor, ingresa una URL válida que comience con http:// o https://")
+                            return
+                            
+                        # Si el tipo de medio es audio y es una URL de YouTube, extraer audio
+                        if media_type.lower() == "audio" and is_youtube_url(content_url):
+                            file_info = extract_audio_from_youtube(content_url, user['id'])
+                            if not file_info:
+                                st.error("No se pudo extraer el audio del video de YouTube.")
+                                return
+                        else:
+                            # Para video o URLs que no son de YouTube, guardar la URL directamente
+                            file_info = {
+                                "url": content_url,
+                                "is_external": True,
+                                "filename": "external_content",
+                                "content_type": "url",
+                                "media_type": media_type.lower()
+                            }
+                    else:
+                        # Validación para cuando no hay archivo o URL
+                        if content_type == "Archivo":
+                            st.error("Por favor, selecciona un archivo para subir.")
+                        else:
+                            st.error("Por favor, ingresa una URL válida.")
+                        return
 
                     # 2. Obtener ID de categoría
                     category_obj = get_category_by_name(category)

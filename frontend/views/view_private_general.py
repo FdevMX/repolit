@@ -41,35 +41,83 @@ def view_private_general():
     # Contenido principal de la vista
     st.title("Todas las Publicaciones")
 
+    # Inicializar claves de filtro en session_state si no existen
+    if 'private_filter_search' not in st.session_state:
+        st.session_state.private_filter_search = ""
+    if 'private_filter_category' not in st.session_state:
+        st.session_state.private_filter_category = "Todas las categorías"
+    if 'private_filter_tags' not in st.session_state:
+        st.session_state.private_filter_tags = []
+    if 'private_filter_only_mine' not in st.session_state:
+        st.session_state.private_filter_only_mine = False
+
     # Filtros
     with st.expander("Filtros de búsqueda", expanded=False):
         col1, col2 = st.columns(2)
 
         with col1:
-            search_query = st.text_input("Buscar por título o descripción", key="search_query")
+            # Usar el valor guardado como predeterminado
+            search_query = st.text_input(
+                "Buscar por título o descripción",
+                value=st.session_state.private_filter_search,
+                key="search_query",
+            )
+            # Guardar cambios en el estado de sesión
+            st.session_state.private_filter_search = search_query
 
             # Obtener categorías de la base de datos
             try:
                 categories = get_categories()
-                category_names = ["Todas las categorías"] + [cat["name"] for cat in categories]
-                selected_category = st.selectbox("Filtrar por categoría", category_names)
+                category_names = ["Todas las categorías"] + [
+                    cat["name"] for cat in categories
+                ]
+                selected_category = st.selectbox(
+                    "Filtrar por categoría",
+                    category_names,
+                    index=(
+                        category_names.index(st.session_state.private_filter_category)
+                        if st.session_state.private_filter_category in category_names
+                        else 0
+                    ),
+                )
+                # Guardar cambios en el estado de sesión
+                st.session_state.private_filter_category = selected_category
             except Exception as e:
                 st.error(f"Error al cargar categorías: {e}")
                 selected_category = "Todas las categorías"
                 categories = []
+                st.session_state.private_filter_category = selected_category
 
         with col2:
             # Obtener etiquetas de la base de datos
             try:
                 tags = get_tags()
-                selected_tags = st.multiselect("Filtrar por etiquetas", 
-                                           [tag["name"] for tag in tags] if tags else [])
+                tag_names = [tag["name"] for tag in tags] if tags else []
+
+                # Filtrar etiquetas guardadas para asegurarse que existan en las etiquetas actuales
+                valid_saved_tags = [
+                    tag
+                    for tag in st.session_state.private_filter_tags
+                    if tag in tag_names
+                ]
+
+                selected_tags = st.multiselect(
+                    "Filtrar por etiquetas", tag_names, default=valid_saved_tags
+                )
+                # Guardar cambios en el estado de sesión
+                st.session_state.private_filter_tags = selected_tags
             except Exception as e:
                 st.error(f"Error al cargar etiquetas: {e}")
                 selected_tags = []
+                st.session_state.private_filter_tags = []
 
             # Opción para ver solo mis publicaciones
-            show_only_mine = st.checkbox("Ver solo mis publicaciones")
+            show_only_mine = st.checkbox(
+                "Ver solo mis publicaciones",
+                value=st.session_state.private_filter_only_mine,
+            )
+            # Guardar cambios en el estado de sesión
+            st.session_state.private_filter_only_mine = show_only_mine
 
     # Obtener publicaciones según los filtros
     try:
