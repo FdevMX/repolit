@@ -278,10 +278,20 @@ def update_publication(publication_id, data, new_file_info=None, tag_names=None)
         
         # Si hay un nuevo archivo, actualizar campos de archivo
         if new_file_info:
+            # Campos estándar de archivo
             for field in ['file_url', 'file_name', 'file_type', 'file_size']:
                 if field in new_file_info:
                     update_fields.append(f"{field} = %s")
                     params.append(new_file_info[field])
+            
+            # Agregar campos para URL externa
+            if 'is_external' in new_file_info:
+                update_fields.append("is_external = %s")
+                params.append(new_file_info['is_external'])
+            
+            if 'media_type' in new_file_info:
+                update_fields.append("media_type = %s")
+                params.append(new_file_info['media_type'])
         
         # Si no hay campos para actualizar, salir
         if not update_fields:
