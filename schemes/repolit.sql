@@ -63,7 +63,9 @@ CREATE TABLE publications (
     file_size INTEGER,
     category_id UUID REFERENCES categories (id),
     user_id UUID REFERENCES users (id),
-    created_at TIMESTAMP
+    created_at TIMESTAMP,
+    is_external BOOLEAN DEFAULT FALSE,
+    media_type VARCHAR(50)
     WITH
         TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP
