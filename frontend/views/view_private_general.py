@@ -439,7 +439,7 @@ def view_private_general():
             </div>
             """, unsafe_allow_html=True)
         else:
-            # Crear un diseño de grid con 4 columnas por fila
+            # Crear un diseño de grid con 3 columnas por fila
             cols = st.columns(3)
             for index, pub in enumerate(publications):
                 with cols[index % 3]:  # Asignar cada publicación a una columna
@@ -494,13 +494,6 @@ def view_private_general():
 
                     # Botones funcionales de Streamlit
                     col1, col2, col3 = st.columns(3)
-
-                    # def create_view_link(pub_id):
-                    #     return f"""
-                    #     <a href="?id={pub_id}" target="_self" class="view-link">
-                    #         Ver publicación
-                    #     </a>
-                    #     """
 
                     # Reemplaza el bloque del botón "Ver" con esto:
                     with col1:
