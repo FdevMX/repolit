@@ -22,38 +22,63 @@ def view_public_apps():
         categories = get_categories()
         show_sidebar_public(categories)
 
+        # Inicializar claves de filtro en session_state si no existen
+        if "public_filter_search" not in st.session_state:
+            st.session_state.public_filter_search = ""
+        if "public_filter_category" not in st.session_state:
+            st.session_state.public_filter_category = "Todas las categorías"
+        if "public_filter_tags" not in st.session_state:
+            st.session_state.public_filter_tags = []
+
         # Filtros de búsqueda
         with st.expander("Filtros de búsqueda", expanded=False):
             col1, col2 = st.columns(2)
 
             with col1:
+                # Usar el valor guardado como predeterminado
                 search_query = st.text_input(
-                    "Buscar por título o descripción", key="search_query"
+                    "Buscar por título o descripción", 
+                    value=st.session_state.public_filter_search,
+                    key="search_query"
                 )
+                # Guardar cambios en el estado de sesión
+                st.session_state.public_filter_search = search_query
 
                 # Obtener categorías de la base de datos
                 try:
-                    category_names = ["Todas las categorías"] + [
-                        cat["name"] for cat in categories
-                    ]
+                    category_names = ["Todas las categorías"] + [cat["name"] for cat in categories]
                     selected_category = st.selectbox(
-                        "Filtrar por categoría", category_names
+                        "Filtrar por categoría", 
+                        category_names,
+                        index=category_names.index(st.session_state.public_filter_category) if st.session_state.public_filter_category in category_names else 0
                     )
+                    # Guardar cambios en el estado de sesión
+                    st.session_state.public_filter_category = selected_category
                 except Exception as e:
                     st.error(f"Error al cargar categorías: {e}")
                     selected_category = "Todas las categorías"
+                    st.session_state.public_filter_category = selected_category
 
             with col2:
                 # Obtener etiquetas de la base de datos
                 try:
                     tags = get_tags()
+                    tag_names = [tag["name"] for tag in tags] if tags else []
+                    
+                    # Filtrar etiquetas guardadas para asegurarse que existan en las etiquetas actuales
+                    valid_saved_tags = [tag for tag in st.session_state.public_filter_tags if tag in tag_names]
+                    
                     selected_tags = st.multiselect(
-                        "Filtrar por etiquetas",
-                        [tag["name"] for tag in tags] if tags else [],
+                        "Filtrar por etiquetas", 
+                        tag_names,
+                        default=valid_saved_tags
                     )
+                    # Guardar cambios en el estado de sesión
+                    st.session_state.public_filter_tags = selected_tags
                 except Exception as e:
                     st.error(f"Error al cargar etiquetas: {e}")
                     selected_tags = []
+                    st.session_state.public_filter_tags = []
 
         # Obtener publicaciones según los filtros
         try:

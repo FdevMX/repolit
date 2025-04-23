@@ -33,10 +33,10 @@ def view_public_appsview():
 
         with main_col:
             # Botón para volver
-            if st.button("← Volver", key="back_button"):
-                st.query_params.clear()
-                st.session_state.vista = "public_apps"
-                st.rerun()
+            # if st.button("← Volver", key="back_button"):
+            #     st.query_params.clear()
+            #     st.session_state.vista = "public_apps"
+            #     st.rerun()
 
             # Obtener ID de la publicación
             pub_id = st.query_params.get('id')
@@ -286,8 +286,14 @@ def view_public_appsview():
 
         btn_col1, btn_col2, btn_col3 = st.columns([1, 2, 1])
         with btn_col2:
-            if st.button("← Volver", key="back_button_one", use_container_width=True):
-                st.query_params.clear()
+            # Para view_public_appsview.py
+            
+            if st.button("← Volver", key="back_button", use_container_width=True):
+                # Solo limpiar el parámetro de ID (mantener los filtros)
+                if 'id' in st.query_params:
+                    del st.query_params['id']
+                
+                # Cambiar vista y recargar
                 st.session_state.vista = "public_apps"
                 st.rerun()
 

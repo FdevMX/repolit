@@ -286,13 +286,15 @@ def view_private_pub_view():
 
             btn_col1, btn_col2, btn_col3 = st.columns([1, 2, 1])
             with btn_col2:
+                # Para view_private_pub_view.py
+                
                 if st.button("← Volver a la lista", key="back_button", use_container_width=True):
-                    # Limpiar el estado y los parámetros
+                    # Solo limpiar el parámetro de ID (mantener los filtros)
                     if 'id' in st.query_params:
-                        st.query_params.clear()
+                        del st.query_params['id']
                     if 'view_pub_id' in st.session_state:
                         del st.session_state['view_pub_id']
-
+                    
                     # Cambiar vista y recargar
                     st.session_state.vista = "private_general"
                     st.rerun()
