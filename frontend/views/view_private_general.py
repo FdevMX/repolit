@@ -430,6 +430,8 @@ def view_private_general():
             st.rerun()
 
     # Si no hay modales activos, mostrar la lista de publicaciones
+    # Reemplazar la sección de tarjetas (líneas ~433-521) con este código:
+    
     else:
         if not publications:
             st.markdown("""
@@ -439,80 +441,339 @@ def view_private_general():
             </div>
             """, unsafe_allow_html=True)
         else:
+            # Inyectar CSS para el nuevo diseño de tarjetas
+            card_css = """
+            <style>
+                /* Ajustes de espaciado */
+                div[data-testid="stVerticalBlock"] > div[style*="flex-direction: column;"] > div[data-testid="stVerticalBlock"] {
+                    gap: 0.5rem;
+                }
+    
+                .pub-card-container {
+                    background-color: #FDF2F8;
+                    border-radius: 15px;
+                    padding: 15px 20px;
+                    margin-bottom: 1.8rem;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+                    display: flex;
+                    flex-direction: column;
+                    height: 320px; 
+                    justify-content: space-between;
+                    border: 1px solid #FBCFE8;
+                    overflow: hidden;
+                    position: relative;
+                }
+    
+                /* Icono Superior */
+                .card-icon-area {
+                    background-color: #FCE7F3;
+                    border-radius: 8px;
+                    padding: 5px;
+                    margin-bottom: 5px;
+                    display: inline-flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    align-self: flex-start;
+                    min-height: 40px;
+                    min-width: 50px;
+                    line-height: 1.1;
+                    float: left;
+                    margin-right: 10px;
+                }
+
+                .card-icon-area .icon-emoji { font-size: 1.6em; margin-bottom: -4px; }
+                .card-icon-area .icon-text { font-size: 0.7em; font-weight: bold; color: #831843; }
+    
+                /* Indicadores de Estado */
+                .card-status-indicators {
+                    position: absolute;
+                    top: 10px;
+                    right: 15px;
+                    text-align: right;
+                    z-index: 10;
+                }
+                .status-indicator {
+                    display: block;
+                    font-size: 0.78em;
+                    margin-bottom: 4px;
+                    font-weight: 500;
+                    padding: 2px 6px;
+                    border-radius: 5px;
+                    color: #fff;
+                }
+                .status-indicator.featured {
+                    background-color: #60A5FA;
+                    color: #EFF6FF;
+                }
+                .status-indicator.draft {
+                    background-color: #FDBA74;
+                    color: #7C2D12;
+                }
+                
+                /* Contenido principal */
+                .card-main-content-wrapper {
+                    overflow: hidden;
+                    flex-grow: 1;
+                    display: flex;
+                    flex-direction: column;
+                }
+    
+                .card-main-content {
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 200px;
+                    max-height: 240px;
+                    overflow: hidden;
+                }
+    
+                /* Estilos de elementos de texto */
+                .card-title {
+                    font-weight: bold;
+                    margin-bottom: 4px;
+                    font-size: 1.1em;
+                    color: #333;
+                    line-height: 1.3;
+                    display: -webkit-box;
+                    -webkit-box-orient: vertical;
+                    -webkit-line-clamp: 2;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    min-height: 36px;
+                    max-height: 38px;
+                    word-break: break-word;
+                    clear: right;
+                }
+    
+                .card-category {
+                    font-size: 0.8em;
+                    font-weight: 500;
+                    color: #6B7280;
+                    margin-bottom: 8px;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
+                }
+    
+                .card-desc {
+                    font-size: 0.9em;
+                    color: #4B5563;
+                    line-height: 1.4;
+                    margin-bottom: 10px;
+                    flex-grow: 1;
+                    display: -webkit-box;
+                    -webkit-box-orient: vertical;
+                    -webkit-line-clamp: 3;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    min-height: 50px;
+                    max-height: 80px;
+                }
+
+                .card-tags {
+                    margin-bottom: 10px;
+                    line-height: 1.5;
+                    max-height: 45px;
+                    overflow: hidden;
+                }
+    
+                .tag {
+                    display: inline-block;
+                    background-color: #E5E7EB;
+                    color: #374151;
+                    padding: 2px 8px;
+                    border-radius: 12px;
+                    font-size: 0.75em;
+                    margin-right: 4px;
+                    margin-bottom: 4px;
+                }
+                .tag-more {
+                    background-color: #D1D5DB;
+                    color: #1F2937;
+                    font-weight: bold;
+                }
+    
+                /* Estilos de Botones */
+                div[data-testid="stHorizontalBlock"] {
+                    justify-content: center;
+                    gap: 8px !important;
+                    margin-top: 10px;
+                    margin-bottom: 10px;
+                }
+                .stButton>button {
+                    font-size: 0.80em !important;
+                    padding: 4px 10px !important;
+                    border-radius: 8px !important;
+                    height: 32px !important;
+                    min-width: 70px !important;
+                    border: 1px solid transparent !important;
+                    font-weight: 500 !important;
+                    transition: background-color 0.2s ease, transform 0.1s ease;
+                }
+                .stButton>button:hover { transform: scale(1.03); }
+                div[data-testid="stHorizontalBlock"] > div:nth-child(1) .stButton>button {
+                    background-color: #E0F2FE !important; color: #075985 !important; border: 1px solid #BAE6FD !important;
+                }
+                div[data-testid="stHorizontalBlock"] > div:nth-child(2) .stButton>button {
+                    background-color: #FEF9C3 !important; color: #713F12 !important; border: 1px solid #FDE68A !important;
+                }
+                div[data-testid="stHorizontalBlock"] > div:nth-child(3) .stButton>button {
+                    background-color: #FEE2E2 !important; color: #991B1B !important; border: 1px solid #FECACA !important;
+                }
+    
+                /* Fechas */
+                .card-dates {
+                    font-size: 0.75em;
+                    color: #666;
+                    text-align: left;
+                    padding-top: 10px;
+                    border-top: 1px solid #F3F4F6;
+                    margin-top: auto;
+                    line-height: 1.2;
+                }
+                .card-date { display: block; margin-bottom: 0px; }
+            </style>
+            """
+            st.markdown(card_css, unsafe_allow_html=True)
+            
             # Crear un diseño de grid con 3 columnas por fila
-            cols = st.columns(3)
+            cols = st.columns(3, gap="large")
             for index, pub in enumerate(publications):
-                with cols[index % 3]:  # Asignar cada publicación a una columna
-                    # Contenido de la tarjeta
-                    # Obtener datos para mostrar
-                    title = pub['title'][:17] + "..." if len(pub['title']) > 17 else pub['title']
-                    description = pub['description'][:80] + "..." if len(pub['description']) > 80 else pub['description']
+                with cols[index % 3]:
+                    # --- Preparación de Datos ---
+                    title = pub['title'][:40] + "..." if len(pub['title']) > 40 else pub['title']
+                    full_title = pub['title']
+                    description_full = pub['description']
+                    description_limit = 100
+                    description_short = (description_full[:description_limit] + '...') if len(description_full) > description_limit else description_full
                     category = pub['category_name']
                     tags = [tag['name'] for tag in pub.get('tags', [])]
-                    tags_html = " ".join([f'<span class="tag">{tag}</span>' for tag in tags[:3]])
-                    if len(tags) > 3:
-                        tags_html += f' <span class="tag">+{len(tags)-3}</span>'
-
                     created = format_date(pub.get('created_at'))
                     updated = format_date(pub.get('updated_at'))
-
-                    # Verificar si hay imagen para mostrar
-                    has_image = pub.get('file_type') and 'image' in pub.get('file_type', '')
-
-                    # HTML para la tarjeta
+                    
+                    # Determinar si la publicación está destacada o es borrador
+                    is_featured = pub.get('is_featured', False)
+                    is_draft = not pub.get('is_public', True)
+                    
+                    # --- Formatear Tags ---
+                    tags_limit = 3
+                    tags_html = ""
+                    for i, tag in enumerate(tags):
+                        if i < tags_limit:
+                            tags_html += f'<span class="tag">{tag}</span>'
+                        elif i == tags_limit:
+                            tags_html += f' <span class="tag tag-more">+{len(tags)-tags_limit}</span>'
+                            break
+    
+                    # --- Determinar el icono según el tipo de contenido ---
+                    icon_html = ""
+                    icon_text = "Archivo"
+                    
+                    # Verificar si es contenido externo y su tipo
+                    is_external = pub.get('is_external', False)
+                    file_type = pub.get('file_type', '')
+                    # Reemplazar la línea que causa el error:
+                    
+                    # Línea original con error:
+                    # media_type = pub.get('media_type', '').lower()
+                    
+                    # Versión corregida:
+                    media_type_raw = pub.get('media_type')
+                    media_type = media_type_raw.lower() if media_type_raw is not None else ''
+                    
+                    if is_external:
+                        if media_type == 'audio':
+                            icon_html = "<span class='icon-emoji'>🎵</span>"
+                            icon_text = "Audio"
+                        else:  # Por defecto, asumir video para contenido externo
+                            icon_html = "<span class='icon-emoji'>▶️</span>"
+                            icon_text = "Video"
+                    else:
+                        # Para archivos locales, detectar por file_type
+                        if isinstance(file_type, str):
+                            if 'pdf' in file_type.lower():
+                                icon_html = "<span class='icon-emoji'>📄</span>"
+                                icon_text = "PDF"
+                            elif 'image' in file_type.lower():
+                                icon_html = "<span class='icon-emoji'>🖼️</span>"
+                                icon_text = "Imagen"
+                            elif 'video' in file_type.lower():
+                                icon_html = "<span class='icon-emoji'>▶️</span>"
+                                icon_text = "Video"
+                            elif 'audio' in file_type.lower():
+                                icon_html = "<span class='icon-emoji'>🎵</span>"
+                                icon_text = "Audio"
+                            elif 'zip' in file_type.lower() or 'rar' in file_type.lower():
+                                icon_html = "<span class='icon-emoji'>🗜️</span>"
+                                icon_text = "Comprimido"
+                            elif 'text' in file_type.lower() or 'doc' in file_type.lower():
+                                icon_html = "<span class='icon-emoji'>📝</span>"
+                                icon_text = "Documento"
+                            else:
+                                icon_html = "<span class='icon-emoji'>📁</span>"
+                                icon_text = "Archivo"
+                        else:
+                            icon_html = "<span class='icon-emoji'>📁</span>"
+                            icon_text = "Archivo"
+    
+                    # Construir área de icono
+                    icon_area_html = f"""
+                    <div class="card-icon-area">
+                        {icon_html}
+                        <span class='icon-text'>{icon_text}</span>
+                    </div>"""
+    
+                    # --- Generar Indicadores de Estado ---
+                    status_indicators_html = ""
+                    indicators = []
+                    if is_featured:
+                        indicators.append("<span class='status-indicator featured'>📌 Destacada</span>")
+                    if is_draft:
+                        indicators.append("<span class='status-indicator draft'>🎨 Borrador</span>")
+    
+                    if indicators:
+                        status_indicators_html = f"<div class='card-status-indicators'>{''.join(indicators)}</div>"
+    
+                    # --- Construir el HTML completo de la tarjeta ---
+                    # --- Construir el HTML completo de la tarjeta ---
                     card_html = f"""
-                    <div class="pub-card">
-                        <h4>{title}</h4>
-                        <p class="card-category">{category}</p>
-                        <p class="card-desc">{description}</p>
-                        <div class="card-tags">{tags_html}</div>
-                        <p class="card-date">Creado: {created}</p>
-                        <p class="card-date">Actualizado: {updated}</p>
+                    <div class="pub-card-container">
+                        <div>{status_indicators_html}</div>
+                        <div class="card-main-content-wrapper"> 
+                            <div>{icon_area_html}</div>
+                            <div class="card-main-content">
+                                <div class="card-title" title="{full_title}">{title}</div>
+                                <div class="card-category">{category}</div>
+                                <div class="card-desc" title="{description_full}">{description_short}</div>
+                                <div class="card-tags">{tags_html}</div>
+                            </div>
+                        </div>
+                        <div class="card-dates">
+                            <span class="card-date">Creado: {created}</span>
+                            <span class="card-date">Actualizado: {updated}</span>
+                        </div>
                     </div>
                     """
-
+                    
+                    # Renderizar HTML
                     st.markdown(card_html, unsafe_allow_html=True)
-
-                    # Mostrar ícono si es una publicación destacada
-                    status_featured = st.container()
-                    with status_featured:
-                        # Featured indicator
-                        if pub.get('is_featured'):
-                            st.markdown("📌 **Destacada**", help="Esta publicación está destacada")
-                        else:
-                            # Empty space placeholder to maintain consistent height
-                            st.markdown("<div style='height: 42px;'></div>", unsafe_allow_html=True)
-
-                    # Mostrar ícono si es un borrador (no público)
-                    status_public = st.container()
-                    with status_public:
-                        if not pub.get('is_public'):
-                            st.markdown("🎨 **Borrador**", help="Esta publicación es privada (solo visible para ti)")
-                        else:
-                            # Empty space placeholder to maintain consistent height
-                            st.markdown("<div style='height: 42px;'></div>", unsafe_allow_html=True)
-
-                    # Botones funcionales de Streamlit
+    
+                    # --- Botones de acción ---
                     col1, col2, col3 = st.columns(3)
-
-                    # Reemplaza el bloque del botón "Ver" con esto:
                     with col1:
-                        # Este es una alternativa
-                        # st.markdown(create_view_link(pub['id']), unsafe_allow_html=True)
-
                         if st.button("Ver", key=f"view_pub_{pub['id']}", use_container_width=True):
                             # Establecer el parámetro de URL
                             st.query_params['id'] = pub['id']
                             # Cambiar la vista
                             st.session_state.vista = "private_pub_view"
                             st.rerun()
-
+    
                     with col2:
                         if st.button("Editar", key=f"edit_pub_{pub['id']}", use_container_width=True):
                             st.session_state.edit_pub_modal = True
                             st.session_state.edit_pub_id = pub['id']
                             st.rerun()
-
+    
                     with col3:
                         if st.button("Eliminar", key=f"delete_pub_{pub['id']}", use_container_width=True):
                             st.session_state.delete_pub_modal = True
